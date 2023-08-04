@@ -4,7 +4,7 @@
 
 #include <userver/server/handlers/http_handler_base.hpp>
 
-namespace service_template {
+namespace userver_sample {
 
 namespace {
 
@@ -17,7 +17,7 @@ public:
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest &request,
       userver::server::request::RequestContext &) const override {
-    return service_template::SayHelloTo(request.GetArg("name"));
+    return userver_sample::SayHelloTo(request.GetArg("name"));
   }
 };
 
@@ -35,4 +35,4 @@ void AppendHello(userver::components::ComponentList &component_list) {
   component_list.Append<Hello>();
 }
 
-} // namespace service_template
+} // namespace userver_sample
