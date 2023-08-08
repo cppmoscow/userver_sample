@@ -40,10 +40,18 @@ components_manager:
         dynamic-config-fallbacks:            # Load options from file and push them into the dynamic config storage.
             fallback-path: @CONFIG_FALLBACK_PATH@
 
+        testsuite-support:
+
+        handler-pastes:                    # Finally! Our handler.
+            path: /pastes                      # Registering handler by URL '/hello'.
+            method: GET,POST,PUT,DELETE                  # It will only reply to GET (HEAD) and POST requests.
+            task_processor: main-task-processor  # Run it on CPU bound task processor
+
+        pastes-database:
+            dbconnection: $dbconnection
+            blocking_task_processor: fs-task-processor
+            dns_resolver: async
+            sync-start: true
+
         dns-client:
             fs-task-processor: fs-task-processor
-
-        handler-root:                    # Finally! Our handler.
-            path: /                      # Registering handler by URL '/hello'.
-            method: GET                  # It will only reply to GET (HEAD) and POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor

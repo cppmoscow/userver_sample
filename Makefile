@@ -75,8 +75,8 @@ format:
 	@find tests -name '*.py' -type f | xargs autopep8 -i
 
 # Internal hidden targets that are used only in docker environment
-.PHONY: --in-docker-start-debug --in-docker-start-release
 --in-docker-start-debug --in-docker-start-release: --in-docker-start-%: install-%
+	@sed -i 's/config_vars.yaml/config_vars.docker.yaml/g' /home/user/.local/etc/userver_sample/static_config.yaml
 	@/home/user/.local/bin/userver_sample \
 		--config /home/user/.local/etc/userver_sample/static_config.yaml
 
@@ -85,12 +85,13 @@ format:
 docker-start-service-debug docker-start-service-release: docker-start-service-%:
 	@docker-compose run -p 8080:8080 --rm userver_sample-container $(MAKE) -- --in-docker-start-$*
 
-# Start specific target in docker environment
+# Start targets makefile in docker environment
 .PHONY: docker-cmake-debug docker-build-debug docker-test-debug docker-clean-debug docker-install-debug docker-cmake-release docker-build-release docker-test-release docker-clean-release docker-install-release
 docker-cmake-debug docker-build-debug docker-test-debug docker-clean-debug docker-install-debug docker-cmake-release docker-build-release docker-test-release docker-clean-release docker-install-release: docker-%:
 	docker-compose run --rm userver_sample-container $(MAKE) $*
 
-# Stop docker container and cleanup data
+# Stop docker container and remove PG data
 .PHONY: docker-clean-data
 docker-clean-data:
 	@docker-compose down -v
+	@rm -rf ./.pgdata

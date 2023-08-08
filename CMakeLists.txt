@@ -9,10 +9,11 @@ add_subdirectory(third_party/userver)
 
 # Common sources
 add_library(${PROJECT_NAME}_objs OBJECT
-    src/root.hpp
-    src/root.cpp
+	src/models/paste.hpp
+    src/http_handlers/pastes.hpp
+    src/http_handlers/pastes.cpp
 )
-target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver-core)
+target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver-core userver-postgresql)
 
 # The Service
 add_executable(${PROJECT_NAME} src/main.cpp)
