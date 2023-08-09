@@ -46,6 +46,8 @@ const auto authentication_error = server::handlers::Unauthorized{};
 
 }  // namespace
 
+namespace pastebin {
+
 class Pastes final : public server::handlers::HttpHandlerBase {
  public:
   static constexpr std::string_view kName = "handler-pastes";
@@ -101,11 +103,9 @@ std::string Pastes::CreatePaste(
   auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
                                   kInsertPaste, content);
   request.SetResponseStatus(server::http::HttpStatus::kCreated);
-  auto [_, code, token] = res.AsSingleRow<Paste>(storages::postgres::kRowTag);
+  auto paste = res.AsSingleRow<Paste>(storages::postgres::kRowTag);
 
-  userver::formats::json::ValueBuilder builder;
-  builder["code"] = code;
-  builder["token"] = token;
+  userver::formats::json::ValueBuilder builder(paste);
   auto response = builder.ExtractValue();
 
   request.GetHttpResponse().SetContentType("application/json");
@@ -144,8 +144,6 @@ std::string Pastes::DeletePaste(std::string_view token,
 
   throw authentication_error;
 }
-
-namespace pastebin {
 
 void AppendPastes(userver::components::ComponentList& component_list) {
   component_list.Append<Pastes>();
