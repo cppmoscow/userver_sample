@@ -21,7 +21,15 @@ const storages::postgres::Query kSelectPasteContent{
 const storages::postgres::Query kInsertPaste{
     "INSERT INTO pastes (content) VALUES($1) RETURNING id, code, token::text "
     "AS token",
-    storages::postgres::Query::Name{"insert_paste_content"}};
+    storages::postgres::Query::Name{"insert_paste"}};
+
+const storages::postgres::Query kUpdatePaste{
+    "UPDATE pastes SET content=$1 WHERE token::text=$2",
+    storages::postgres::Query::Name{"update_paste"}};
+
+const storages::postgres::Query kDeletePaste{
+    "DELETE FROM pastes WHERE token::text=$1",
+    storages::postgres::Query::Name{"delete_paste"}};
 
 const std::string& GetArgOrThrow(const server::http::HttpRequest& request,
                                  const std::string& argument) {
@@ -114,11 +122,28 @@ std::string Pastes::GetPaste(std::string_view code,
   return res.AsSingleRow<std::string>();
 }
 
-std::string Pastes::UpdatePaste(std::string_view token,
-                                const server::http::HttpRequest&) const {}
+std::string Pastes::UpdatePaste(
+    std::string_view token, const server::http::HttpRequest& request) const {
+  const auto& content = request.RequestBody();
+  auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
+                                  kUpdatePaste, content, token);
+  if (res.RowsAffected()) {
+    return {};
+  }
+
+  throw authentication_error;
+}
 
 std::string Pastes::DeletePaste(std::string_view token,
-                                const server::http::HttpRequest&) const {}
+                                const server::http::HttpRequest&) const {
+  auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
+                                  kDeletePaste, token);
+  if (res.RowsAffected()) {
+    return {};
+  }
+
+  throw authentication_error;
+}
 
 namespace pastebin {
 
