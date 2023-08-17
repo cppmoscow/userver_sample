@@ -19,7 +19,7 @@ const storages::postgres::Query kSelectPasteContent{
     storages::postgres::Query::Name{"select_paste_content"}};
 
 const storages::postgres::Query kInsertPaste{
-    "INSERT INTO pastes (content) VALUES($1) RETURNING id, code, token::text "
+    "INSERT INTO pastes (content) VALUES($1) RETURNING code, token::text "
     "AS token",
     storages::postgres::Query::Name{"insert_paste"}};
 
