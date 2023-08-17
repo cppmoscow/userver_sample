@@ -10,8 +10,8 @@ add_subdirectory(third_party/userver)
 # Common sources
 add_library(${PROJECT_NAME}_objs OBJECT
 	src/models/paste.hpp
-    src/http_handlers/pastes.hpp
-    src/http_handlers/pastes.cpp
+    src/controllers/pastes.hpp
+    src/controllers/pastes.cpp
 )
 target_include_directories(${PROJECT_NAME}_objs PUBLIC src)
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver-core userver-postgresql)

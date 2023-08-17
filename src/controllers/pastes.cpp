@@ -2,14 +2,6 @@
 
 #include "models/paste.hpp"
 
-#include <userver/components/component.hpp>
-#include <userver/components/minimal_server_component_list.hpp>
-#include <userver/server/handlers/http_handler_base.hpp>
-#include <userver/utils/daemon_run.hpp>
-
-#include <userver/storages/postgres/cluster.hpp>
-#include <userver/storages/postgres/component.hpp>
-
 using namespace userver;
 
 namespace {
@@ -48,37 +40,15 @@ const auto authentication_error = server::handlers::Unauthorized{};
 
 namespace pastebin {
 
-class Pastes final : public server::handlers::HttpHandlerBase {
- public:
-  static constexpr std::string_view kName = "handler-pastes";
-
-  Pastes(const components::ComponentConfig& config,
-         const components::ComponentContext& context);
-
-  std::string HandleRequestThrow(
-      const server::http::HttpRequest& request,
-      server::request::RequestContext&) const override;
-
- private:
-  std::string CreatePaste(const server::http::HttpRequest&) const;
-  std::string GetPaste(std::string_view code,
-                       const server::http::HttpRequest&) const;
-  std::string UpdatePaste(std::string_view token,
-                          const server::http::HttpRequest&) const;
-  std::string DeletePaste(std::string_view token,
-                          const server::http::HttpRequest&) const;
-
-  storages::postgres::ClusterPtr pg_cluster_;
-};
-
-Pastes::Pastes(const components::ComponentConfig& config,
-               const components::ComponentContext& context)
+PastesController::PastesController(const components::ComponentConfig& config,
+                                   const components::ComponentContext& context)
     : HttpHandlerBase(config, context),
       pg_cluster_(context.FindComponent<components::Postgres>("pastes-database")
                       .GetCluster()) {}
 
-std::string Pastes::HandleRequestThrow(const server::http::HttpRequest& request,
-                                       server::request::RequestContext&) const {
+std::string PastesController::HandleRequestThrow(
+    const server::http::HttpRequest& request,
+    server::request::RequestContext&) const {
   auto method = request.GetMethod();
   if (method == server::http::HttpMethod::kGet) {
     auto code = GetArgOrThrow(request, "code");
@@ -97,7 +67,7 @@ std::string Pastes::HandleRequestThrow(const server::http::HttpRequest& request,
   }
 }
 
-std::string Pastes::CreatePaste(
+std::string PastesController::CreatePaste(
     const server::http::HttpRequest& request) const {
   const auto& content = request.RequestBody();
   auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
@@ -112,8 +82,8 @@ std::string Pastes::CreatePaste(
   return ToString(response);
 }
 
-std::string Pastes::GetPaste(std::string_view code,
-                             const server::http::HttpRequest&) const {
+std::string PastesController::GetPaste(std::string_view code,
+                                       const server::http::HttpRequest&) const {
   storages::postgres::ResultSet res = pg_cluster_->Execute(
       storages::postgres::ClusterHostType::kSlave, kSelectPasteContent, code);
   if (res.IsEmpty()) {
@@ -122,7 +92,7 @@ std::string Pastes::GetPaste(std::string_view code,
   return res.AsSingleRow<std::string>();
 }
 
-std::string Pastes::UpdatePaste(
+std::string PastesController::UpdatePaste(
     std::string_view token, const server::http::HttpRequest& request) const {
   const auto& content = request.RequestBody();
   auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
@@ -134,8 +104,8 @@ std::string Pastes::UpdatePaste(
   throw authentication_error;
 }
 
-std::string Pastes::DeletePaste(std::string_view token,
-                                const server::http::HttpRequest&) const {
+std::string PastesController::DeletePaste(
+    std::string_view token, const server::http::HttpRequest&) const {
   auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
                                   kDeletePaste, token);
   if (res.RowsAffected()) {
@@ -143,10 +113,6 @@ std::string Pastes::DeletePaste(std::string_view token,
   }
 
   throw authentication_error;
-}
-
-void AppendPastes(userver::components::ComponentList& component_list) {
-  component_list.Append<Pastes>();
 }
 
 }  // namespace pastebin
