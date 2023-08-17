@@ -76,7 +76,7 @@ format:
 
 # Internal hidden targets that are used only in docker environment
 --in-docker-start-debug --in-docker-start-release: --in-docker-start-%: install-%
-	@sed -i 's/config_vars.yaml/config_vars_docker.yaml/g' /home/user/.local/etc/userver_sample/static_config.yaml
+	@sed -i 's/config_vars.yaml/config_vars.docker.yaml/g' /home/user/.local/etc/userver_sample/static_config.yaml
 	@/home/user/.local/bin/userver_sample \
 		--config /home/user/.local/etc/userver_sample/static_config.yaml
 
