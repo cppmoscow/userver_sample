@@ -6,4 +6,4 @@ is_testing: false
 
 server-port: 8080
 
-dbconnection: 'postgresql://pastebin:pastebin@service-postgres:5432/pastebin'
+dbconnection: 'postgresql://pastebin:pastebin@pastebin-userver-database:5432/pastebin'
