@@ -13,6 +13,7 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/http_handlers/pastes.hpp
     src/http_handlers/pastes.cpp
 )
+target_include_directories(${PROJECT_NAME}_objs PUBLIC src)
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver-core userver-postgresql)
 
 # The Service
